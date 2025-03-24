@@ -1,0 +1,9 @@
+src_top/*.vhd.bak
+src_top/*.sdc.bak
+
+syn/top/db
+syn/top/incremental_db
+syn/top/output_files
+
+tests/transcript
+tests/vsim.wlf
