@@ -1,9 +1,5 @@
-src_top/*.vhd.bak
-src_top/*.sdc.bak
-
-syn/top/db
-syn/top/incremental_db
-syn/top/output_files
+src/*.vhd.bak
+src/*.sdc.bak
 
 tests/transcript
 tests/vsim.wlf
