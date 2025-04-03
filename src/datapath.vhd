@@ -183,7 +183,7 @@ BEGIN
 	END PROCESS;
 
 
-	-- Process pour la partie Forward
+	-- Process pour la partie Forwarding Unit
 	ForwardUnit PROCESS(EX_rd1,EX_rd2,WB_Result, EX_MEM_AluResult) IS
 		BEGIN
 			IF(EX_MEM_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rs)) 
@@ -202,7 +202,31 @@ BEGIN
 			THEN EX_ForwardB = 01 -- Condition pour MEM Forward B 
 			END IF
 	
-			CASE (OP) IS
+		CASE (EX_ForwardA) IS
+
+			WHEN "10"		=>  -- EX/MEM
+			EX_preSrcB => EX_MEM_AluResult
+		
+			WHEN "01"		=>  -- MEM/WB
+			EX_preSrcB => WB_Result
+			
+			WHEN OTHERS		=> -- ID/EX
+			EX_preSrcB => ID_EX_rd1
+
+		END CASE;
+
+		CASE (EX_ForwardB) IS
+
+			WHEN "10"		=>  -- EX/MEM
+			EX_preSrcB => EX_MEM_AluResult
+
+			WHEN "01"		=>  -- MEM/WB
+			EX_preSrcB => WB_Result
+			
+			WHEN OTHERS		=> -- ID/EX
+			EX_preSrcB => ID_EX_rd2
+
+		END CASE;
 			
  
 	END ForwardUnit;
