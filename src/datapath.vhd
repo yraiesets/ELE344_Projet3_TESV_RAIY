@@ -84,7 +84,7 @@ ARCHITECTURE rtl OF DATAPATH IS
 	SIGNAL ID_EX_MemWrite       : std_logic;
 	SIGNAL ID_EX_MemRead        : std_logic;
 	SIGNAL ID_EX_RegWrite       : std_logic;
-	SIGNAL ID_EX_MemtoReg       : std_logic
+	SIGNAL ID_EX_MemtoReg       : std_logic;
 	SIGNAL ID_EX_SignImm        : std_logic_vector(31 DOWNTO 0);
 	SIGNAL ID_EX_rd             : std_logic_vector(4 DOWNTO 0);
 	SIGNAL ID_EX_rd2            : std_logic_vector(31 DOWNTO 0);
@@ -108,7 +108,12 @@ ARCHITECTURE rtl OF DATAPATH IS
 
 	
 
-        ID_MemtoReg	<= MemtoReg;
+
+       
+
+BEGIN
+	-- Assignation des signaux de controlle 
+	ID_MemtoReg	<= MemtoReg;
        	ID_Branch	<= Branch;      
         ID_AluSrc	<= AluSrc;   
         ID_RegDst	<= RegDst;         
@@ -117,14 +122,12 @@ ARCHITECTURE rtl OF DATAPATH IS
         ID_MemRead	<= MemReadIn;
         ID_MemWrite	<= MemWriteIn;
         ID_AluControl	<= AluControl;
-       
 
-BEGIN
     	-- Mul2-to-1 pour determine l'addresse d'ecriture
-	EX_WriteReg <= ID_EX_Instruction(20 DOWNTO 16) WHEN EX_RegDst = '0' ELSE ID_EX_Instruction(15 DOWNTO 11);
+	EX_WriteReg <= ID_EX_Instruction(20 DOWNTO 16) WHEN ID_EX_RegDst = '0' ELSE ID_EX_Instruction(15 DOWNTO 11);
 
    	 -- Mul2-to-1 pour determine les donnees d'ecriture
-	WB_Result <= MEM_WB_ReadData WHEN EX_MEM_MemtoReg = '1' ELSE EX_MEM_AluResultIntern;
+	WB_Result <= MEM_WB_ReadData WHEN EX_MEM_MemtoReg = '1' ELSE EX_MEM_AluResult;
 
     	-- Extension de signe (SignExtend)
 	ID_SignImm <= STD_LOGIC_VECTOR(RESIZE(SIGNED(Instruction(15 DOWNTO 0)), N));
@@ -133,7 +136,7 @@ BEGIN
     	REGISTER_FILE	:	ENTITY work.RegFile(RegFile_arch)
         	PORT MAP(
             		clk	=>	Clk,
-            		we	=>	MEM_WB_WriteReg,
+            		we	=>	MEM_WB_RegWrite,
             		ra1	=>	IF_ID_Instruction(25 DOWNTO 21),
             		ra2	=>	IF_ID_Instruction(20 DOWNTO 16),
             		wa	=>	MEM_WB_WriteReg,
@@ -143,7 +146,7 @@ BEGIN
         	);
 
 	-- Mul2-to-1 pour determine la SrcB de l'ALU
-	EX_SrcB <= SignImm WHEN ID_EX_AluSrc = '1' ELSE ID_rd2;
+	EX_SrcB <= ID_EX_SignImm WHEN ID_EX_AluSrc = '1' ELSE ID_rd2;
 	
 	-- UAL
 	UAL		:	ENTITY work.UAL(rtl)
@@ -157,13 +160,13 @@ BEGIN
 		);
 
 	-- Determiner si on doit effectuer un branchement
-	EX_PCSrc		<=	EX_Branch AND EX_Zero;
+	EX_PCSrc		<=	ID_EX_Branch AND EX_Zero;
 	
 	-- Calcul des signaux utilises dans la logique du PC :
 	IF_PCPlus4 	<=	STD_LOGIC_VECTOR(UNSIGNED(IF_PC) + TO_UNSIGNED(4, N));
-	ID_PCJump		<=	ID_PCPlus4(31 DOWNTO 28) & IF_ID_Instruction(25 DOWNTO 0) & "00"; -- Concatenation pour obtenir l'adresse de saut complete
-	EX_SignImmSh	<=	STD_LOGIC_VECTOR(SHIFT_LEFT(SIGNED(EX_SignImm), 2));
-	EX_PCBranch	<=	STD_LOGIC_VECTOR(SIGNED(EX_PCPlus4) + SIGNED(EX_SignImmSh)); -- Maj
+	ID_PCJump		<=	IF_ID_PCPlus4(31 DOWNTO 28) & IF_ID_Instruction(25 DOWNTO 0) & "00"; -- Concatenation pour obtenir l'adresse de saut complete
+	EX_SignImmSh	<=	STD_LOGIC_VECTOR(SHIFT_LEFT(SIGNED(ID_EX_SignImm), 2));
+	EX_PCBranch	<=	STD_LOGIC_VECTOR(SIGNED(ID_EX_PCPlus4) + SIGNED(EX_SignImmSh)); -- Maj
 
 	-- Mul2-to-1 pour determiner PCNextBr
 	IF_PCNextBr <= EX_PCBranch WHEN EX_PCSrc = '1' ELSE IF_PCPlus4;
@@ -184,7 +187,7 @@ BEGIN
 
 
 	-- Process pour la partie Forwarding Unit
-	ForwardUnit PROCESS(EX_rd1,EX_rd2,WB_Result, EX_MEM_AluResult) IS
+	ForwardUnit : PROCESS(EX_rd1, EX_rd2, WB_Result, EX_MEM_AluResult, EX_MEM_RegWrite, MEM_WB_RegWrite, MEM_WB_WriteReg, ID_EX_rs, ID_EX_rt) 
 		BEGIN
 			IF(EX_MEM_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rs)) 
 			THEN EX_ForwardA = 10 -- Condition pour EX Forward A 
@@ -195,36 +198,36 @@ BEGIN
 			END IF
 
 			IF(EX_MEM_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rt)) 
-			THEN EX_ForwardB = 10 -- Condition pour EX Forward B
-			END IF 
+			THEN EX_ForwardB = 10; -- Condition pour EX Forward B
+			END IF; 
 
 			IF(MEM_WB_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rt)) 
-			THEN EX_ForwardB = 01 -- Condition pour MEM Forward B 
-			END IF
+			THEN EX_ForwardB = 01; -- Condition pour MEM Forward B 
+			END IF;
 	
 		CASE (EX_ForwardA) IS
 
-			WHEN "10"		=>  -- EX/MEM
-			EX_preSrcB => EX_MEM_AluResult
+			WHEN "10"	=>  -- EX/MEM
+			EX_SrcA => EX_MEM_AluResult;
 		
-			WHEN "01"		=>  -- MEM/WB
-			EX_preSrcB => WB_Result
+			WHEN "01"	=>  -- MEM/WB
+			EX_SrcA => WB_Result;
 			
-			WHEN OTHERS		=> -- ID/EX
-			EX_preSrcB => ID_EX_rd1
+			WHEN OTHERS	=> -- ID/EX
+			EX_SrcA => ID_EX_rd1;
 
 		END CASE;
 
 		CASE (EX_ForwardB) IS
 
-			WHEN "10"		=>  -- EX/MEM
-			EX_preSrcB => EX_MEM_AluResult
+			WHEN "10"	=>  -- EX/MEM
+			EX_preSrcB => EX_MEM_AluResult;
 
-			WHEN "01"		=>  -- MEM/WB
-			EX_preSrcB => WB_Result
+			WHEN "01"	=>  -- MEM/WB
+			EX_preSrcB => WB_Result;
 			
-			WHEN OTHERS		=> -- ID/EX
-			EX_preSrcB => ID_EX_rd2
+			WHEN OTHERS	=> -- ID/EX
+			EX_preSrcB => ID_EX_rd2;
 
 		END CASE;
 			
