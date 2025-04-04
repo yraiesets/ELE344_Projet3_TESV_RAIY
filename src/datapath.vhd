@@ -127,7 +127,8 @@ BEGIN
 	EX_WriteReg <= ID_EX_Instruction(20 DOWNTO 16) WHEN ID_EX_RegDst = '0' ELSE ID_EX_Instruction(15 DOWNTO 11);
 
    	 -- Mul2-to-1 pour determine les donnees d'ecriture
-	WB_Result <= MEM_WB_ReadData WHEN EX_MEM_MemtoReg = '1' ELSE EX_MEM_AluResult;
+	--WB_Result <= MEM_WB_ReadData WHEN EX_MEM_MemtoReg = '1' ELSE EX_MEM_AluResult;
+	WB_Result <= MEM_WB_ReadData WHEN MEM_WB_MemtoReg = '1' ELSE MEM_WB_AluResult;
 
     	-- Extension de signe (SignExtend)
 	ID_SignImm <= STD_LOGIC_VECTOR(RESIZE(SIGNED(Instruction(15 DOWNTO 0)), N));
@@ -187,132 +188,135 @@ BEGIN
 
 
 	-- Process pour la partie Forwarding Unit
-	ForwardUnit : PROCESS(EX_rd1, EX_rd2, WB_Result, EX_MEM_AluResult, EX_MEM_RegWrite, MEM_WB_RegWrite, MEM_WB_WriteReg, ID_EX_rs, ID_EX_rt) 
+	ForwardUnit : PROCESS(ID_EX_rd1, ID_EX_rd2, WB_Result, EX_MEM_AluResult, EX_MEM_RegWrite, MEM_WB_RegWrite, MEM_WB_WriteReg, ID_EX_rs, ID_EX_rt) 
 		BEGIN
-			IF(EX_MEM_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rs)) 
-			THEN EX_ForwardA = 10 -- Condition pour EX Forward A 
-			END IF 
 
-			IF(MEM_WB_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rs)) 
-			THEN EX_ForwardA = 01 -- Condition pour MEM Forward A 
-			END IF
+		-- Condition pour EX Forward A
+		IF (EX_MEM_RegWrite = '1' AND MEM_WB_WriteReg /= "00000" AND MEM_WB_WriteReg = ID_EX_rs) THEN
+		    EX_ForwardA <= "10";
+		END IF;
 
-			IF(EX_MEM_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rt)) 
-			THEN EX_ForwardB = 10; -- Condition pour EX Forward B
-			END IF; 
+		-- Condition pour MEM Forward A
+		IF (MEM_WB_RegWrite = '1' AND MEM_WB_WriteReg /= "00000" AND MEM_WB_WriteReg = ID_EX_rs) THEN
+		    EX_ForwardA <= "01";
+		END IF;
+	
+		-- Condition pour EX Forward B
+		IF (EX_MEM_RegWrite = '1' AND MEM_WB_WriteReg /= "00000" AND MEM_WB_WriteReg = ID_EX_rt) THEN
+		    EX_ForwardB <= "10";
+		END IF;
 
-			IF(MEM_WB_RegWrite AND (MEM_WB_WriteReg NOT ZEROS) AND (MEM_WB_WriteReg = ID_EX_rt)) 
-			THEN EX_ForwardB = 01; -- Condition pour MEM Forward B 
-			END IF;
+		-- Condition pour MEM Forward B
+		IF (MEM_WB_RegWrite = '1' AND MEM_WB_WriteReg /= "00000" AND MEM_WB_WriteReg = ID_EX_rt) THEN
+		    EX_ForwardB <= "01";
+		END IF;
 	
 		CASE (EX_ForwardA) IS
 
 			WHEN "10"	=>  -- EX/MEM
-			EX_SrcA => EX_MEM_AluResult;
+			EX_SrcA <= EX_MEM_AluResult;
 		
 			WHEN "01"	=>  -- MEM/WB
-			EX_SrcA => WB_Result;
+			EX_SrcA <= WB_Result;
 			
 			WHEN OTHERS	=> -- ID/EX
-			EX_SrcA => ID_EX_rd1;
+			EX_SrcA <= ID_EX_rd1;
 
 		END CASE;
 
 		CASE (EX_ForwardB) IS
 
 			WHEN "10"	=>  -- EX/MEM
-			EX_preSrcB => EX_MEM_AluResult;
+			EX_preSrcB <= EX_MEM_AluResult;
 
 			WHEN "01"	=>  -- MEM/WB
-			EX_preSrcB => WB_Result;
+			EX_preSrcB <= WB_Result;
 			
 			WHEN OTHERS	=> -- ID/EX
-			EX_preSrcB => ID_EX_rd2;
+			EX_preSrcB <= ID_EX_rd2;
 
 		END CASE;
 			
  
-	END ForwardUnit;
+	END PROCESS ForwardUnit;
 
 
-	-- Banc de regirstres pour le passage de l'étage IF_ID.
-	IF_ID PROCESS(Clk) IS
-	
+
+
+		-- Banc de registres pour le passage de l'étage IF_ID.
+		IF_ID : PROCESS(Clk) IS
 		BEGIN
 			IF RISING_EDGE(Clk) THEN
-				IF_PCPlus4 		=> IF_ID_PCPlus4;  -- Signal 2 vers Signal 13 
-				INSTRUCTION		=> IF_ID_INSTRUCTION ; -- Instruction vers Signal 31 (Init Instruction)
-			END IF;
-	END IF_ID;
-	
-
-	-- Banc de regirstres pour le passage de l'étage ID_EX.
-	ID_EX PROCESS(Clk) IS
-		BEGIN
-			IF RISING_EDGE(Clk) THEN
-				ID_MemtoReg	=> ID_EX_MemtoReg;
-       				ID_Branch	=> ID_EX_Branch;      
-        			ID_AluSrc	=> ID_EX_AluSrc;   
-        			ID_RegDst	=> ID_EX_RegDst;         
-        			ID_RegWrite	=> ID_EX_RegWrite;    
-        			ID_Jump		=> ID_EX_Jump;
-        			ID_MemRead	=> ID_EX_MemRead;
-        			ID_MemWrite	=> ID_EX_MemWrite;
-       				ID_AluControl	=> ID_EX_AluControl;
-
-				ID_PCPlus4	=> ID_EX_PCPlus4;
-
-				ID_rd1 		=> ID_EX_rd1;
-				ID_rd2 		=> ID_EX_rd2;
-
-				ID_SignImm 	=> ID_EX_SignImm;
-				ID_rs 		=> ID_EX_rs;
-				ID_rt 		=> ID_EX_rt;
-				ID_rd 		=> ID_EX_rd;
-			END IF;
-	END ID_EX;
-	
-	
-	-- Banc de regirstres pour le passage de l'étage EX_MEM.
-	EX_MEM PROCESS(Clk) IS
-		BEGIN
-			IF RISING_EDGE(Clk) THEN
+				IF_ID_PCPlus4    <= IF_PCPlus4;        -- Signal 13 <= Signal 2
+				IF_ID_INSTRUCTION <= INSTRUCTION;      -- Instruction => Signal 31
 				
-				ID_EX_MemtoReg	=> EX_MEM_MemtoReg;
-        			ID_EX_RegWrite	=> EX_MEM_RegWrite; 
-        			ID_EX_MemRead	=> EX_MEM_MemRead;
-        			ID_EX_MemWrite	=> EX_MEM_MemWrite;
-
-				EX_AluResult 	=> EX_MEM_AluResult; 
-       				EX_PreSrcB	=> EX_MEM_PreSrcB;
-				EX_WriteReg	=> EX_MEM_WriteReg;
+				ID_rs <= IF_ID_Instruction(25 DOWNTO 21);
+				ID_rt <= IF_ID_Instruction(20 DOWNTO 16);
+				ID_rd <= IF_ID_Instruction(15 DOWNTO 11);
 			END IF;
-	END EX_MEM;
+		END PROCESS IF_ID;
 
--- Banc de regirstres pour le passage de l'étage MEM_WB.
-	MEM_WB PROCESS(Clk) IS
+		-- Banc de registres pour le passage de l'étage ID_EX.
+		ID_EX : PROCESS(Clk) IS
 		BEGIN
 			IF RISING_EDGE(Clk) THEN
-				
-				EX_MEM_MemtoReg		=> MEM_WB_MemtoReg;
-        			EX_MEM_RegWrite		=> MEM_WB_RegWrite; 
+				ID_EX_MemtoReg   <= ID_MemtoReg;
+				ID_EX_Branch     <= ID_Branch;
+				ID_EX_AluSrc     <= ID_AluSrc;
+				ID_EX_RegDst     <= ID_RegDst;
+				ID_EX_RegWrite   <= ID_RegWrite;
+				--ID_EX_Jump       <= ID_Jump;
+				ID_EX_MemRead    <= ID_MemRead;
+				ID_EX_MemWrite   <= ID_MemWrite;
+				ID_EX_AluControl <= ID_AluControl;
 
-
-				ReadData		=> MEM_WB_ReadData
-				EX_MEM_AluResult	=> MEM_WB_AluResult;
-				EX_MEM_WriteReg 	=> MEM_WB_WriteReg;
-			
-
-       				
+				ID_EX_PCPlus4    <= IF_ID_PCPlus4;
+				ID_EX_rd1        <= ID_rd1;
+				ID_EX_rd2        <= ID_rd2;
+				ID_EX_SignImm    <= ID_SignImm;
+	
+				ID_EX_rs         <= ID_rs;
+				ID_EX_rt         <= ID_rt;
+				ID_EX_rd         <= ID_rd;
 			END IF;
-	END MEM_WB;
+		END PROCESS ID_EX;
+	
+		-- Banc de registres pour le passage de l'étage EX_MEM.
+		EX_MEM : PROCESS(Clk) IS
+		BEGIN
+			IF RISING_EDGE(Clk) THEN
+				EX_MEM_MemtoReg  <= ID_EX_MemtoReg;
+				EX_MEM_RegWrite  <= ID_EX_RegWrite;
+				EX_MEM_MemRead   <= ID_EX_MemRead;
+				EX_MEM_MemWrite  <= ID_EX_MemWrite;
+		
+				EX_MEM_AluResult <= EX_AluResult;
+				EX_MEM_PreSrcB   <= EX_PreSrcB;
+				EX_MEM_WriteReg  <= EX_WriteReg;
+			END IF;
+		END PROCESS EX_MEM;
+
+		-- Banc de registres pour le passage de l'étage MEM_WB.
+		MEM_WB : PROCESS(Clk) IS
+		BEGIN
+			IF RISING_EDGE(Clk) THEN
+				MEM_WB_MemtoReg  <= EX_MEM_MemtoReg;
+				MEM_WB_RegWrite  <= EX_MEM_RegWrite;
+				MEM_WB_ReadData  <= ReadData;
+				MEM_WB_AluResult <= EX_MEM_AluResult;
+				MEM_WB_WriteReg  <= EX_MEM_WriteReg;
+			END IF;
+		END PROCESS MEM_WB;
+
+
+	
 	
 
 	-- Assignation des Sorties
-	MemReadOut	<=	MemReadIn;
-	MemWriteOut	<=	MemWriteIn;
-	PC		<=	PCIntern;
-	AluResult	<=	AluResultIntern;
-	WriteData	<=	rd2;
+	MemReadOut  <= EX_MEM_MemRead;
+	MemWriteOut <= EX_MEM_MemWrite;
+	PC          <= IF_PC;
+	AluResult   <= EX_MEM_AluResult;
+	WriteData   <= EX_MEM_PreSrcB;
 	
 END ARCHITECTURE rtl;
