@@ -28,6 +28,7 @@ ARCHITECTURE rtl OF MIPS IS
 	SIGNAL BranchI, AluSrcI, RegDstI	:	STD_LOGIC;
 	SIGNAL RegWriteI, JumpI			:	STD_LOGIC;
 	SIGNAL AluControlI			:	STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SIGNAL IF_ID_InstructionI		:	STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 
 BEGIN
@@ -35,8 +36,8 @@ BEGIN
 	-- Instanciation du controleur
 	CONTROLLER_INST : ENTITY work.CONTROLLER(rtl)
 		PORT MAP (
-			OP		=>	Instruction(31 DOWNTO 26),
-			Funct		=>	Instruction(5 DOWNTO 0),
+			OP		=>	IF_ID_InstructionI(31 DOWNTO 26),
+			Funct		=>	IF_ID_InstructionI(5 DOWNTO 0),
 			MemtoReg	=>	MemtoRegI,
 			MemWrite	=>	MemWriteI,
 			MemRead		=>	MemReadI,
@@ -68,7 +69,8 @@ BEGIN
 			MemWriteOut	=>	MemWrite,
 			PC		=>	PC,
 			WriteData	=>	WriteData,
- 			AluResult	=>	AluResult
+ 			AluResult	=>	AluResult,
+			IF_ID_InstructionOut	=> IF_ID_InstructionI
 		);
 
 END ARCHITECTURE rtl;
