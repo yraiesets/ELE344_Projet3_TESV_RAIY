@@ -52,25 +52,25 @@ BEGIN
 	-- Instanciation du datapath
 	DATAPATH_INST : ENTITY work.DATAPATH(rtl)
 		PORT MAP (
-			Clk		=>	Clock,
-			Reset		=>	Reset,
-			MemtoReg	=>	MemtoRegI,
-			Branch		=>	BranchI,
-			AluSrc		=>	AluSrcI,
-			RegDst		=>	RegDstI,
-			RegWrite	=>	RegWriteI,
-			Jump		=>	JumpI,
-			MemReadIn	=>	MemReadI,
-			MemWriteIn	=>	MemWriteI,
-			AluControl	=>	AluControlI,
-			Instruction	=>	Instruction,
-			ReadData	=>	ReadData,
-			MemReadOut	=>	MemRead,
-			MemWriteOut	=>	MemWrite,
-			PC		=>	PC,
-			WriteData	=>	WriteData,
- 			AluResult	=>	AluResult,
-			IF_ID_InstructionOut	=> IF_ID_InstructionI
+			Clk			=>	Clock,
+			Reset			=>	Reset,
+			MemtoReg		=>	MemtoRegI,
+			Branch			=>	BranchI,
+			AluSrc			=>	AluSrcI,
+			RegDst			=>	RegDstI,
+			RegWrite		=>	RegWriteI,
+			Jump			=>	JumpI,
+			MemReadIn		=>	MemReadI,
+			MemWriteIn		=>	MemWriteI,
+			AluControl		=>	AluControlI,
+			Instruction		=>	Instruction,
+			ReadData		=>	ReadData,
+			MemReadOut		=>	MemRead,
+			MemWriteOut		=>	MemWrite,
+			PC			=>	PC,
+			WriteData		=>	WriteData,
+ 			AluResult		=>	AluResult,
+			IF_ID_InstructionOut	=> 	IF_ID_InstructionI
 		);
 
 END ARCHITECTURE rtl;

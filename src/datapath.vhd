@@ -227,10 +227,10 @@ BEGIN
 				"00";
 
 	-- Mul3-to-1 pour determine le pemier operande de l'UAL
-	EX_SrcA		<=	ID_EX_rd1 WHEN EX_ForwardA = "00" ELSE WB_Result WHEN EX_ForwardA = "01" ELSE EX_MEM_AluResult WHEN EX_ForwardA = "10";
+	EX_SrcA		<=	ID_EX_rd1 WHEN EX_ForwardA = "00" ELSE WB_Result WHEN EX_ForwardA = "01" ELSE EX_MEM_AluResult WHEN EX_ForwardA = "10" ELSE (OTHERS => '0');
 
 	-- Mul3-to-1 pour determine la seconde operande de l'UAL si elle provient d'un registre
-	EX_preSrcB	<=	ID_EX_rd2 WHEN EX_ForwardB = "00" ELSE WB_Result WHEN EX_ForwardB = "01" ELSE EX_MEM_AluResult WHEN EX_ForwardB = "10";
+	EX_preSrcB	<=	ID_EX_rd2 WHEN EX_ForwardB = "00" ELSE WB_Result WHEN EX_ForwardB = "01" ELSE EX_MEM_AluResult WHEN EX_ForwardB = "10" ELSE (OTHERS => '0');
 
 	-- Mul2-to-1 pour determine la seconde operande de l'UAL
 	EX_SrcB		<=	EX_preSrcB WHEN ID_EX_AluSrc = '0' ELSE	ID_EX_SignImm;
