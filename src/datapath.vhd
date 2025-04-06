@@ -12,47 +12,33 @@ ENTITY DATAPATH IS
 
     PORT(
 
-        Clk         :   IN  STD_LOGIC;
-        Reset       :   IN  STD_LOGIC;
-        MemtoReg    :   IN  STD_LOGIC;
-        Branch      :   IN  STD_LOGIC;
-        AluSrc      :   IN  STD_LOGIC;
-        RegDst      :   IN  STD_LOGIC;
-        RegWrite    :   IN  STD_LOGIC;
-        Jump        :   IN  STD_LOGIC;
-        MemReadIn   :   IN  STD_LOGIC;
-        MemWriteIn  :   IN  STD_LOGIC;
-        AluControl  :   IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
-        Instruction :   IN  STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-        ReadData    :   IN  STD_LOGIC_VECTOR(N-1 DOWNTO 0);
+        Clk         		:   	IN  STD_LOGIC;
+        Reset       		:   	IN  STD_LOGIC;
+        MemtoReg    		:   	IN  STD_LOGIC;
+        Branch      		:   	IN  STD_LOGIC;
+        AluSrc      		:   	IN  STD_LOGIC;
+        RegDst      		:   	IN  STD_LOGIC;
+        RegWrite    		:   	IN  STD_LOGIC;
+        Jump        		:   	IN  STD_LOGIC;
+        MemReadIn   		:   	IN  STD_LOGIC;
+        MemWriteIn  		:   	IN  STD_LOGIC;
+        AluControl  		:   	IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
+        Instruction 		:   	IN  STD_LOGIC_VECTOR(N-1 DOWNTO 0);
+        ReadData    		:   	IN  STD_LOGIC_VECTOR(N-1 DOWNTO 0);
 
-        MemReadOut  :   OUT STD_LOGIC;
-        MemWriteOut :   OUT STD_LOGIC;
-        PC          :   OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-        AluResult   :   OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-        WriteData   :   OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0)
+        MemReadOut  		:   	OUT STD_LOGIC;
+        MemWriteOut 		:   	OUT STD_LOGIC;
+        PC          		:   	OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0);
+        AluResult   		:   	OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0);
+        WriteData   		:   	OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0);
+	IF_ID_InstructionOut	:	OUT STD_LOGIC_VECTOR(N-1 DOWNTO 0)
 
     );
 
 END ENTITY DATAPATH;
 
 ARCHITECTURE rtl OF DATAPATH IS
-
-	-- Signaux internes pour le banc de registres
-	SIGNAL WriteReg                    					:   	STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL Result, SignImm, rd1, rd2   					:   	STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-
-	-- Signaux internes pour l'ALU
-	SIGNAL SrcB, AluResultIntern						:	STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-	SIGNAL Zero								:	STD_LOGIC;
-
-	-- Signaux internes pour le PC
-	SIGNAL PCIntern, PCNext, PCPlus4					:	STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-	SIGNAL PCBranch, PCJump, PCNextBr					:	STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-	SIGNAL SignImmSh							:	STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-	SIGNAL PCSrc								:	STD_LOGIC;
 	
-
 	-- Signaux de pipelines
 
 	SIGNAL IF_PCNextBr          : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -162,14 +148,16 @@ BEGIN
 	--			Etage Pipeline Instruction Decode (ID)			   --
 	-------------------------------------------------------------------------------------
 	
+	-- Signaux de controle - Controller.vhd
 	ID_MemtoReg	<=	MemtoReg;
 	ID_MemWrite	<=	MemWriteIn;
 	ID_MemRead	<=	MemReadIn;
 	ID_Branch	<=	Branch;
 	ID_AluSrc	<=	AluSrc;
-	ID_RegDst	<=	RegDst
+	ID_RegDst	<=	RegDst;
 	ID_RegWrite	<=	RegWrite;
 	ID_AluControl	<=	AluControl;
+	ID_Jump		<=	Jump;
 
 	ID_PCJump	<=	IF_ID_PCPlus4(31 DOWNTO 28) & IF_ID_Instruction(25 DOWNTO 0) & "00"; -- Concatenation pour obtenir l'adresse de saut complete
 
@@ -200,18 +188,21 @@ BEGIN
 
 	PROCESS(Clk) BEGIN
 		IF RISING_EDGE(Clk) THEN
-			ID_EX_PCPlus4 	<= IF_ID_PCPlus4;
-			ID_EX_rd1 	<= ID_rd1;
-			ID_EX_rd2	<= ID_rd2;
-			ID_EX_SignImm	<= ID_SignImm;
-			ID_EX_rs	<= ID_rs;
-			ID_EX_rt	<= ID_rt;
-			ID_EX_rd  	<= ID_rd;
-			ID_EX_RegWrite 	<= ID_RegWrite;
-			ID_EX_MemtoReg	<= ID_MemtoReg;
-			ID_EX_MemWrite	<= ID_MemWrite;
-			ID_EX_MemRead 	<= ID_MemRead;
-			ID_EX_Branch	<= ID_Branch;
+			ID_EX_PCPlus4 		<= 	IF_ID_PCPlus4;
+			ID_EX_rd1 		<= 	ID_rd1;
+			ID_EX_rd2		<= 	ID_rd2;
+			ID_EX_SignImm		<= 	ID_SignImm;
+			ID_EX_rs		<= 	ID_rs;
+			ID_EX_rt		<= 	ID_rt;
+			ID_EX_rd  		<= 	ID_rd;
+			ID_EX_RegWrite 		<= 	ID_RegWrite;
+			ID_EX_MemtoReg		<= 	ID_MemtoReg;
+			ID_EX_MemWrite		<= 	ID_MemWrite;
+			ID_EX_MemRead 		<= 	ID_MemRead;
+			ID_EX_Branch		<= 	ID_Branch;
+			ID_EX_AluControl	<= 	ID_AluControl;
+			ID_EX_AluSrc		<=	ID_AluSrc;
+			ID_EX_RegDst		<=	ID_RegDst;
 		END IF;
 	END PROCESS;
 
@@ -226,35 +217,91 @@ BEGIN
 
 	EX_PCBranch	<=	STD_LOGIC_VECTOR(SIGNED(ID_EX_PCPlus4) + SIGNED(EX_SignImmSh));
 
+	-- Forwading Unit
+	EX_ForwardA	<=	"10"	WHEN	(EX_MEM_RegWrite = '1' AND EX_MEM_WriteReg /= "00000" AND EX_MEM_WriteReg = ID_EX_rs)	ELSE	-- Gestion EX Hazard
+				"01"	WHEN	(MEM_WB_RegWrite = '1' AND MEM_WB_WriteReg /= "00000" AND MEM_WB_WriteReg = ID_EX_rs)	ELSE	-- Gestion MEM Hazard
+				"00";
+
+	EX_ForwardB	<=	"10"	WHEN	(EX_MEM_RegWrite = '1' AND EX_MEM_WriteReg /= "00000" AND EX_MEM_WriteReg = ID_EX_rt)	ELSE	-- Gestion EX Hazard
+				"01"	WHEN	(MEM_WB_RegWrite = '1' AND MEM_WB_WriteReg /= "00000" AND MEM_WB_WriteReg = ID_EX_rt)	ELSE	-- Gestion MEM Hazard
+				"00";
+
+	-- Mul3-to-1 pour determine le pemier operande de l'UAL
+	EX_SrcA		<=	ID_EX_rd1 WHEN EX_ForwardA = "00" ELSE WB_Result WHEN EX_ForwardA = "01" ELSE EX_MEM_AluResult WHEN EX_ForwardA = "10";
+
+	-- Mul3-to-1 pour determine la seconde operande de l'UAL si elle provient d'un registre
+	EX_preSrcB	<=	ID_EX_rd2 WHEN EX_ForwardB = "00" ELSE WB_Result WHEN EX_ForwardB = "01" ELSE EX_MEM_AluResult WHEN EX_ForwardB = "10";
+
+	-- Mul2-to-1 pour determine la seconde operande de l'UAL
+	EX_SrcB		<=	EX_preSrcB WHEN ID_EX_AluSrc = '0' ELSE	ID_EX_SignImm;
+
     	-- UAL
 	UAL		:	ENTITY work.UAL(rtl)
 		PORT MAP(
-			ualControl	=>	AluControl,
-			srcA		=>	rd1,
-			srcB		=>	SrcB,
-			result		=>	AluResultIntern,
+			ualControl	=>	ID_EX_AluControl,
+			srcA		=>	EX_SrcA,
+			srcB		=>	EX_SrcB,
+			result		=>	EX_AluResult,
 			cout		=>	OPEN,
 			zero		=>	EX_Zero
 		);
 
-	-- Forwading Unit
+	 -- Mul2-to-1 pour determine le registre d'ecriture
+	EX_WriteReg <= ID_EX_rt WHEN ID_EX_RegDst = '0' ELSE ID_EX_rd;
 
-    	-- Mul2-to-1 pour determine l'addresse d'ecriture
-	WriteReg <= Instruction(20 DOWNTO 16) WHEN RegDst = '0' ELSE Instruction(15 DOWNTO 11);
+	-------------------------------------------------------------------------------------
+	--			Etage Registre EX/MEM	   	          		   --
+	-------------------------------------------------------------------------------------
+
+	PROCESS(Clk) BEGIN
+		IF RISING_EDGE(Clk) THEN
+
+		EX_MEM_MemtoReg		<=	ID_EX_MemtoReg;
+		EX_MEM_RegWrite		<=	ID_EX_RegWrite;
+		EX_MEM_MemWrite		<=	ID_EX_MemWrite;
+		EX_MEM_MemRead		<=	ID_EX_MemRead;
+		EX_MEM_AluResult	<=	EX_AluResult;
+		EX_MEM_preSrcB		<=	EX_preSrcB;
+		EX_MEM_WriteReg		<=	EX_WriteReg;
+
+		END IF;
+	END PROCESS;
+
+	-------------------------------------------------------------------------------------
+	--			Etage Pipeline Memory (MEM)			           --
+	-------------------------------------------------------------------------------------
+
+	-- Gerer dans le module imem.vhd
+
+	-------------------------------------------------------------------------------------
+	--			Etage Registre MEM/WB	   	          		   --
+	-------------------------------------------------------------------------------------
+
+	PROCESS(Clk) BEGIN
+		IF RISING_EDGE(Clk) THEN
+		
+		MEM_WB_readdata		<=	ReadData;
+		MEM_WB_RegWrite		<=	EX_MEM_RegWrite;
+		MEM_WB_MemtoReg		<=	EX_MEM_MemtoReg;
+		MEM_WB_WriteReg		<=	EX_MEM_WriteReg;
+		MEM_WB_AluResult	<=	EX_MEM_AluResult;
+		
+		END IF;
+	END PROCESS;
+	
+	-------------------------------------------------------------------------------------
+	--			Etage Pipeline Write Back (WB)			           --
+	-------------------------------------------------------------------------------------
 
    	 -- Mul2-to-1 pour determine les donnees d'ecriture
-	Result <= ReadData WHEN MemtoReg = '1' ELSE AluResultIntern;
-
-
-	-- Mul2-to-1 pour determine la SrcB de l'ALU
-	SrcB <= SignImm WHEN AluSrc = '1' ELSE rd2;
-	
+	WB_Result <= MEM_WB_readdata WHEN MEM_WB_MemtoReg = '1' ELSE MEM_WB_AluResult;
 
 	-- Assignation des Sorties
-	MemReadOut	<=	MemReadIn;
-	MemWriteOut	<=	MemWriteIn;
-	PC		<=	IF_PC;
-	AluResult	<=	AluResultIntern;
-	WriteData	<=	rd2;
+	MemReadOut		<=	EX_MEM_MemRead;
+	MemWriteOut		<=	EX_MEM_MemWrite;
+	PC			<=	IF_PC;
+	AluResult		<=	EX_MEM_AluResult;
+	WriteData		<=	EX_MEM_preSrcB;
+	IF_ID_InstructionOut 	<=	IF_ID_Instruction;
 	
 END ARCHITECTURE rtl;

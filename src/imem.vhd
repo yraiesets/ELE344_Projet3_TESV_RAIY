@@ -1,10 +1,10 @@
 --========================= imem.vhd ============================
--- ELE-343 Conception des systemes ordines
--- HIVER 2017, Ecole de technologie superieure
--- Auteur : Chakib Tadj, Vincent Trudel-Lapierre, Yves Blaquiere
+-- ELE-343 Conception des systèmes ordinés
+-- HIVER 2017, Ecole de technologie supérieure
+-- Auteur : Chakib Tadj, Vincent Trudel-Lapierre, Yves Blaquière
 -- Update: Hachem Bensalem, Janvier 2025
 -- =============================================================
--- Description: imem        
+-- Description: imem avec NOp      
 -- =============================================================
 
 LIBRARY ieee;
@@ -16,36 +16,43 @@ ENTITY imem IS -- Memoire d'instructions
   PORT (adresse : IN  std_logic_vector(7 DOWNTO 0); -- Ce signal corresponds au signal PC(9 DOWNTO 2)
                                                     
         data : OUT std_logic_vector(31 DOWNTO 0));
-END;  -- imem;
+END; 
 
 ARCHITECTURE imem_arch OF imem IS
 
-  CONSTANT TAILLE_ROM : positive := 19;  -- taille de la rom (modifier au besoin)
+  CONSTANT TAILLE_ROM : positive := 27;  -- taille de la rom (modifier au besoin)
   TYPE romtype IS ARRAY (0 TO TAILLE_ROM) OF std_logic_vector(31 DOWNTO 0);
 	
-	--Mettre a jour la Rom avec le code machine genere avec MARS et valide par le charge de laboratoire
+--Mettre à jour la Rom avec le code machine généré avec MARS et validé par le chargé de laboratoire
   CONSTANT Rom : romtype := (
-	0  => x"20030001",
-	1  => x"2067000b",
-	2  => x"00671024",
-	3  => x"ac472000",
-	4  => x"00432820",
-	5  => x"8ca21fff",
-	6  => x"10430002",
-	7  => x"2063000b",
-	8  => x"08000006",
-	9  => x"00a7202a",
-	10 => x"10820001",
-	11 => x"ac851fff",
-	12 => x"00e2202a",
-	13 => x"00622025",
-	14 => x"2067ffff",
-	15 => x"00e23822",
-	16 => x"8c621ff4",
-	17 => x"ac871ff4",
-	18 => x"00051820",
-	19 => x"10a3ffec");
-
+    0  => x"20030001",
+    1  => x"2067000B",
+    2  => x"00671024",
+    3  => x"AC472000",
+    4  => x"00432820",
+    5  => x"8CA21FFF",
+    6  => x"20000000",
+    7  => x"10430005",
+    8  => x"20000000",
+    9  => x"20000000",
+    10 => x"2063000B",
+    11 => x"08000006",
+    12 => x"20000000",
+    13 => x"00A7202A",
+    14 => x"10820003",
+    15 => x"20000000",
+    16 => x"20000000",
+    17 => x"AC851FFF",
+    18 => x"00E2202A",
+    19 => x"00622025",
+    20 => x"2067FFFF",
+    21 => x"00E23822",
+    22 => x"8C621FF4",
+    23 => x"AC871FF4",
+    24 => x"00051820",
+    25 => x"10A3FFE6",
+    26 => x"20000000",
+    27 => x"20000000");
 BEGIN
   PROCESS (adresse)
   BEGIN
