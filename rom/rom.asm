@@ -1,35 +1,28 @@
-main:
-	addi	$3, $0, 1
-	addi	$7, $3, 11
-	and	$2, $3, $7
-	sw	$7, 8192($2)
-	add	$5, $2, $3
-	addi	$0, $0, 0      # NOP requis avant le LW à cause de la dépendance sur $5
-	lw	$2, 8191($5)
-	
-To:
-	beq	$2, $3, next
-	addi	$0, $0, 0      # NOP 1 (branch delay slot)
-	addi	$0, $0, 0      # NOP 2 (branch delay slot)
-	addi	$3, $3, 11
-	j	To
-	addi	$0, $0, 0      # NOP après J (jump delay slot)
-	
-next:
-	slt 	$4, $5, $7
-	beq	$4, $2, around
-	addi	$0, $0, 0      # NOP 1 (branch delay slot)
-	addi	$0, $0, 0      # NOP 2 (branch delay slot)
-	sw   	$5, 8191($4)
-	
-around:
-	slt	$4, $7, $2
-	or	$4, $3, $2
-	addi	$7, $3, -1
-	sub	$7, $7, $2
-	lw	$2, 8180($3)
-	sw	$7, 8180($4)
-        add  	$3, $0, $5       
-        beq  	$5, $3, main
-        addi	$0, $0, 0      # NOP 1 (branch delay slot)
-        addi	$0, $0, 0      # NOP 2 (branch delay slot)
+20030001
+2067000b
+00671024
+ac472000
+00432820
+20000000
+8ca21fff
+10430005
+20000000
+20000000
+2063000b
+08000007
+20000000
+00a7202a
+10820003
+20000000
+20000000
+ac851fff
+00e2202a
+00622025
+2067ffff
+00e23822
+8c621ff4
+ac871ff4
+00051820
+10a3ffe6
+20000000
+20000000
