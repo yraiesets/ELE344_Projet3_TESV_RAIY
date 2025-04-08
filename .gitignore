@@ -1,5 +1,5 @@
-src/*.vhd.bak
-src/*.sdc.bak
+src/top/*.vhd.bak
+src/top/*.sdc.bak
 
 syn/top/db
 syn/top/incremental_db
