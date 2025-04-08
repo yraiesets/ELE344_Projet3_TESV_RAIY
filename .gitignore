@@ -1,9 +1,16 @@
 src/top/*.vhd.bak
 src/top/*.sdc.bak
 
+src/top_bonus/*.vhd.bak
+src/top_bonus/*.sdc.bak
+
 syn/top/db
 syn/top/incremental_db
 syn/top/output_files
+
+syn/top_bonus/db
+syn/top_bonus/incremental_db
+syn/top_bonus/output_files
 
 tests/transcript
 tests/vsim.wlf
