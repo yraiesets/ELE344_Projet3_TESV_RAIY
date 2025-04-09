@@ -20,7 +20,7 @@ END;
 
 ARCHITECTURE imem_arch OF imem IS
 
-  CONSTANT TAILLE_ROM : positive := 23;  -- taille de la rom (modifier au besoin)
+  CONSTANT TAILLE_ROM : positive := 22;  -- taille de la rom (modifier au besoin)
   TYPE romtype IS ARRAY (0 TO TAILLE_ROM) OF std_logic_vector(31 DOWNTO 0);
 	
 --Mettre à jour la Rom avec le code machine généré avec MARS et validé par le chargé de laboratoire
@@ -47,8 +47,7 @@ CONSTANT Rom : romtype := (
   19 => x"8c621ff4",
   20 => x"ac871ff4", 
   21 => x"00051820",
-  22 =>	x"10a3ffe9",
-  23 => x"20000000");
+  22 =>	x"10a3ffe9");
 BEGIN
   PROCESS (adresse)
   BEGIN
