@@ -28,4 +28,3 @@ around:
     sw      $7, 8180($4)
     add     $3, $0, $5
     beq     $5, $3, main
-    addi    $0, $0, 0
