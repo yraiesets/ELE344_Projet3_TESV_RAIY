@@ -1,4 +1,4 @@
---	Controller.VHD
+--	Datapath.VHD
 --	Yasser Raies et Vincent Tessier
 --	Hiver 2025
 
@@ -41,73 +41,82 @@ ARCHITECTURE rtl OF DATAPATH IS
 	
 	-- Signaux de pipelines
 
-	SIGNAL IF_PCNextBr          : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL IF_PCNext            : STD_LOGIC_VECTOR(31 DOWNTO 0);  
-	SIGNAL IF_PC                : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL IF_PCPlus4           : STD_LOGIC_VECTOR(31 DOWNTO 0); 
-	SIGNAL IF_ID_PCPlus4        : STD_LOGIC_VECTOR(31 DOWNTO 0);  
-	SIGNAL IF_ID_Instruction    : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_PCJump            : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_SignImm           : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_rs                : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ID_rt                : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ID_rd                : STD_LOGIC_VECTOR(4 DOWNTO 0); 
-	SIGNAL ID_rd1               : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_rd2               : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_Jump              : STD_LOGIC;
-	SIGNAL ID_MemtoReg          : STD_LOGIC;
-	SIGNAL ID_MemWrite          : STD_LOGIC;
-	SIGNAL ID_MemRead           : STD_LOGIC;
-	SIGNAL ID_Branch            : STD_LOGIC;
-	SIGNAL ID_AluSrc            : STD_LOGIC;
-	SIGNAL ID_RegDst            : STD_LOGIC;
-	SIGNAL ID_RegWrite          : STD_LOGIC;
-	SIGNAL ID_AluControl        : STD_LOGIC_VECTOR(3 DOWNTO 0);
-	SIGNAL EX_PCBranch          : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_PCSrc             : STD_LOGIC;
-	SIGNAL EX_SignImmSh         : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_ForwardA          : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL EX_ForwardB          : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL EX_preSrcB           : std_Logic_vector(31 DOWNTO 0);
-	SIGNAL EX_SrcB              : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_SrcA              : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_AluResult         : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_Zero              : STD_LOGIC;
-	SIGNAL ID_EX_AluSrc         : STD_LOGIC;
-	SIGNAL ID_EX_RegDst         : STD_LOGIC;
-	SIGNAL ID_EX_AluControl     : STD_LOGIC_VECTOR(3 DOWNTO 0);
-	SIGNAL EX_WriteReg          : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ID_EX_rt             : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ID_EX_rs             : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ID_EX_rd1            : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_EX_Branch         : STD_LOGIC;
-	SIGNAL EX_cout              : STD_LOGIC;
-	SIGNAL ID_EX_MemWrite       : STD_LOGIC;
-	SIGNAL ID_EX_MemRead        : STD_LOGIC;
-	SIGNAL ID_EX_RegWrite       : STD_LOGIC;
-	SIGNAL ID_EX_MemtoReg       : STD_LOGIC;
-	SIGNAL ID_EX_SignImm        : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_EX_rd             : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ID_EX_rd2            : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_EX_PCPlus4        : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ID_EX_instruction    : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_MEM_AluResult     : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_MEM_MemWrite      : STD_LOGIC;
-	SIGNAL EX_MEM_MemRead       : STD_LOGIC;
-	SIGNAL EX_MEM_MemtoReg      : STD_LOGIC;
-	SIGNAL EX_MEM_RegWrite      : STD_LOGIC;
-	SIGNAL EX_MEM_preSrcB       : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL EX_MEM_WriteReg      : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL EX_MEM_instruction   : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL WB_Result            : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL MEM_WB_WriteReg      : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL MEM_WB_MemtoReg      : STD_LOGIC;
-	SIGNAL MEM_WB_RegWrite      : STD_LOGIC;
-	SIGNAL MEM_WB_AluResult     : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL MEM_WB_readdata      : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL MEM_WB_instruction   : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL IF_PCNextBr          	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL IF_PCNext            	: STD_LOGIC_VECTOR(31 DOWNTO 0);  
+	SIGNAL IF_PC                	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL IF_PCPlus4           	: STD_LOGIC_VECTOR(31 DOWNTO 0); 
+	SIGNAL IF_ID_PCPlus4        	: STD_LOGIC_VECTOR(31 DOWNTO 0);  
+	SIGNAL IF_ID_Instruction    	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_PCJump            	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_SignImm           	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_rs                	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ID_rt                	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ID_rd                	: STD_LOGIC_VECTOR(4 DOWNTO 0); 
+	SIGNAL ID_rd1               	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_rd2               	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_Jump              	: STD_LOGIC;
+	SIGNAL ID_MemtoReg          	: STD_LOGIC;
+	SIGNAL ID_MemWrite          	: STD_LOGIC;
+	SIGNAL ID_MemRead		: STD_LOGIC;
+	SIGNAL ID_Branch            	: STD_LOGIC;
+	SIGNAL ID_AluSrc            	: STD_LOGIC;
+	SIGNAL ID_RegDst            	: STD_LOGIC;
+	SIGNAL ID_RegWrite          	: STD_LOGIC;
+	SIGNAL ID_AluControl        	: STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SIGNAL EX_PCBranch          	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_PCSrc             	: STD_LOGIC;
+	SIGNAL EX_SignImmSh         	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_ForwardA          	: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL EX_ForwardB          	: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL EX_preSrcB           	: std_Logic_vector(31 DOWNTO 0);
+	SIGNAL EX_SrcB              	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_SrcA              	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_AluResult         	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_Zero              	: STD_LOGIC;
+	SIGNAL ID_EX_AluSrc         	: STD_LOGIC;
+	SIGNAL ID_EX_RegDst         	: STD_LOGIC;
+	SIGNAL ID_EX_AluControl     	: STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SIGNAL EX_WriteReg          	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ID_EX_rt             	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ID_EX_rs             	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ID_EX_rd1            	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_EX_Branch         	: STD_LOGIC;
+	SIGNAL EX_cout              	: STD_LOGIC;
+	SIGNAL ID_EX_MemWrite       	: STD_LOGIC;
+	SIGNAL ID_EX_MemRead        	: STD_LOGIC;
+	SIGNAL ID_EX_RegWrite       	: STD_LOGIC;
+	SIGNAL ID_EX_MemtoReg       	: STD_LOGIC;
+	SIGNAL ID_EX_SignImm        	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_EX_rd             	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ID_EX_rd2            	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_EX_PCPlus4        	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_EX_instruction    	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_MEM_AluResult     	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_MEM_MemWrite      	: STD_LOGIC;
+	SIGNAL EX_MEM_MemRead       	: STD_LOGIC;
+	SIGNAL EX_MEM_MemtoReg      	: STD_LOGIC;
+	SIGNAL EX_MEM_RegWrite      	: STD_LOGIC;
+	SIGNAL EX_MEM_preSrcB       	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL EX_MEM_WriteReg      	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL EX_MEM_instruction   	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL WB_Result            	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL MEM_WB_WriteReg      	: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL MEM_WB_MemtoReg      	: STD_LOGIC;
+	SIGNAL MEM_WB_RegWrite      	: STD_LOGIC;
+	SIGNAL MEM_WB_AluResult     	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL MEM_WB_readdata      	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL MEM_WB_instruction   	: STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+	-- Signal pour la detection du Hazard
+	SIGNAL LW_HAZARD_FLAG		: STD_LOGIC;
 
 BEGIN
+
+	-------------------------------------------------------------------------------------
+	--			Detection d'alea de type LOAD_USE			   --
+	-------------------------------------------------------------------------------------
+
+	LW_HAZARD_FLAG	<=	'1'	WHEN	(ID_EX_MemRead = '1' AND (ID_EX_rt = ID_rs OR ID_EX_rt = ID_rt)) ELSE '0';
 
 	-------------------------------------------------------------------------------------
 	--			Etage Pipeline Instruction Fetch (IF)			   --
@@ -119,13 +128,15 @@ BEGIN
 	-- Mul2-to-1 pour determiner IF_PCNext
 	IF_PCNext <= ID_PCJump WHEN ID_Jump = '1' ELSE IF_PCNextBr;
 
-	-- Bascule D Synchrone avec remise a zero asynchrone (clear).
+	-- Bascule D Synchrone avec remise a zero asynchrone (clear) - PC va stall si un hazard load_use est detecte.
 	PROCESS(Clk, Reset) IS
 		BEGIN
 			IF Reset = '1' THEN
 				IF_PC <= (OTHERS => '0');
 			ELSIF RISING_EDGE(Clk) THEN
-				IF_PC <= IF_PCNext;
+				IF LW_HAZARD_FLAG = '0' THEN
+					IF_PC <= IF_PCNext;
+				END IF;
 			END IF;
 	END PROCESS;
 
@@ -139,8 +150,10 @@ BEGIN
 
 	PROCESS(Clk) BEGIN
 		IF RISING_EDGE(Clk) THEN
-			IF_ID_Instruction	<=	Instruction;
-			IF_ID_PCPlus4		<=	IF_PCPlus4;
+			IF LW_HAZARD_FLAG = '0' THEN
+				IF_ID_Instruction	<=	Instruction;
+				IF_ID_PCPlus4		<=	IF_PCPlus4;
+			END IF;
 		END IF;	
 	END PROCESS;
 
@@ -188,21 +201,40 @@ BEGIN
 
 	PROCESS(Clk) BEGIN
 		IF RISING_EDGE(Clk) THEN
-			ID_EX_PCPlus4 		<= 	IF_ID_PCPlus4;
-			ID_EX_rd1 		<= 	ID_rd1;
-			ID_EX_rd2		<= 	ID_rd2;
-			ID_EX_SignImm		<= 	ID_SignImm;
-			ID_EX_rs		<= 	ID_rs;
-			ID_EX_rt		<= 	ID_rt;
-			ID_EX_rd  		<= 	ID_rd;
-			ID_EX_RegWrite 		<= 	ID_RegWrite;
-			ID_EX_MemtoReg		<= 	ID_MemtoReg;
-			ID_EX_MemWrite		<= 	ID_MemWrite;
-			ID_EX_MemRead 		<= 	ID_MemRead;
-			ID_EX_Branch		<= 	ID_Branch;
-			ID_EX_AluControl	<= 	ID_AluControl;
-			ID_EX_AluSrc		<=	ID_AluSrc;
-			ID_EX_RegDst		<=	ID_RegDst;
+			IF LW_HAZARD_FLAG = '1' THEN -- On injecte un NOP si un LOAD-USE Hazard est detecte
+				ID_EX_RegWrite   <= '0';
+				ID_EX_MemRead    <= '0';
+				ID_EX_MemWrite   <= '0';
+				ID_EX_Branch     <= '0';
+				ID_EX_AluControl <= (OTHERS => '0');
+				ID_EX_AluSrc     <= '0';
+				ID_EX_RegDst     <= '0';
+            			ID_EX_MemtoReg   <= '0';
+            			ID_EX_rd1        <= (OTHERS => '0');
+            			ID_EX_rd2        <= (OTHERS => '0');
+            			ID_EX_SignImm    <= (OTHERS => '0');
+            			ID_EX_rs         <= (OTHERS => '0');
+            			ID_EX_rt         <= (OTHERS => '0');
+            			ID_EX_rd         <= (OTHERS => '0');
+            			ID_EX_PCPlus4    <= (OTHERS => '0');
+            			
+			ELSE
+				ID_EX_PCPlus4 		<= 	IF_ID_PCPlus4;
+				ID_EX_rd1 		<= 	ID_rd1;
+				ID_EX_rd2		<= 	ID_rd2;
+				ID_EX_SignImm		<= 	ID_SignImm;
+				ID_EX_rs		<= 	ID_rs;
+				ID_EX_rt		<= 	ID_rt;
+				ID_EX_rd  		<= 	ID_rd;
+				ID_EX_RegWrite 		<= 	ID_RegWrite;
+				ID_EX_MemtoReg		<= 	ID_MemtoReg;
+				ID_EX_MemWrite		<= 	ID_MemWrite;
+				ID_EX_MemRead 		<= 	ID_MemRead;
+				ID_EX_Branch		<= 	ID_Branch;
+				ID_EX_AluControl	<= 	ID_AluControl;
+				ID_EX_AluSrc		<=	ID_AluSrc;
+				ID_EX_RegDst		<=	ID_RegDst;
+			END IF;
 		END IF;
 	END PROCESS;
 
