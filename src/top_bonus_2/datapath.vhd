@@ -107,8 +107,11 @@ ARCHITECTURE rtl OF DATAPATH IS
 	SIGNAL MEM_WB_readdata      	: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL MEM_WB_instruction   	: STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-	-- Signal pour la detection du Hazard
+	-- Signaux pour les detections de Hazards
 	SIGNAL LW_HAZARD_FLAG		: STD_LOGIC;
+	SIGNAL ID_BRANCH_FLAG		: STD_LOGIC;
+	SIGNAL ID_SignImmSh		: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ID_PCBranch		: STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 BEGIN
 
@@ -123,7 +126,7 @@ BEGIN
 	-------------------------------------------------------------------------------------
 
 	-- Mul2-to-1 pour determiner IF_PCNextBr
-	IF_PCNextBr <= EX_PCBranch WHEN EX_PCSrc = '1' ELSE IF_PCPlus4;
+	IF_PCNextBr <= ID_PCBranch WHEN ID_BRANCH_FLAG = '1' ELSE IF_PCPlus4;
 
 	-- Mul2-to-1 pour determiner IF_PCNext
 	IF_PCNext <= ID_PCJump WHEN ID_Jump = '1' ELSE IF_PCNextBr;
@@ -176,6 +179,9 @@ BEGIN
 
 	ID_rs	<= IF_ID_Instruction(25 DOWNTO 21);
 	ID_rt	<= IF_ID_Instruction(20 DOWNTO 16);
+	ID_rd	<= IF_ID_Instruction(15 DOWNTO 11);
+
+	ID_BRANCH_FLAG	<=	'1'	WHEN	(ID_Branch = '1' AND (ID_rd1 = ID_rd2)) ELSE '0';
 	
 	-- Banc de registres
     	REGISTER_FILE	:	ENTITY work.RegFile(RegFile_arch)
@@ -190,10 +196,10 @@ BEGIN
             		rd2	=>	ID_rd2
         	);
 
-	ID_rd	<= IF_ID_Instruction(15 DOWNTO 11);
-
-    	-- Extension de signe (SignExtend)
-	ID_SignImm <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IF_ID_Instruction(15 DOWNTO 0)), N));
+    	-- Extension de signe (SignExtend) et Gestion des sauts.
+	ID_SignImm 	<= STD_LOGIC_VECTOR(RESIZE(SIGNED(IF_ID_Instruction(15 DOWNTO 0)), N));
+	ID_SignImmSh	<= STD_LOGIC_VECTOR(SHIFT_LEFT(SIGNED(ID_SignImm), 2));
+	ID_PCBranch	<= STD_LOGIC_VECTOR(SIGNED(IF_ID_PCPlus4) + SIGNED(ID_SignImmSh));
 
 	-------------------------------------------------------------------------------------
 	--				Etage Registre ID/EX		   	           --

@@ -20,39 +20,35 @@ END;
 
 ARCHITECTURE imem_arch OF imem IS
 
-  CONSTANT TAILLE_ROM : positive := 26;  -- taille de la rom (modifier au besoin)
+  CONSTANT TAILLE_ROM : positive := 23;  -- taille de la rom (modifier au besoin)
   TYPE romtype IS ARRAY (0 TO TAILLE_ROM) OF std_logic_vector(31 DOWNTO 0);
 	
 --Mettre à jour la Rom avec le code machine généré avec MARS et validé par le chargé de laboratoire
 CONSTANT Rom : romtype := (
-  0  => x"20030001",  -- addi $3, $0, 1
-  1  => x"2067000b",  -- addi $7, $3, 11
-  2  => x"00671024",  -- and $2, $3, $7
-  3  => x"ac472000",  -- sw $7, 8192($2)
-  4  => x"00432820",  -- add $5, $2, $3
-  5  => x"8ca21fff",  -- lw $2, 8191($5)
-  6  => x"10430005",  -- beq $2, $3, next
-  7  => x"20000000",  -- NOP (BEQ delay slot 1)
-  8  => x"20000000",  -- NOP (BEQ delay slot 2)
-  9  => x"2063000b",  -- addi $3, $3, 11
-  10 => x"08000006",  -- j To (nouvelle adresse : saute à ligne 6 maintenant)
-  11 => x"20000000",  -- NOP (J delay slot)
-  12 => x"00a7202a",  -- slt $4, $5, $7
-  13 => x"10820003",  -- beq $4, $2, around
-  14 => x"20000000",  -- NOP (BEQ delay slot 1)
-  15 => x"20000000",  -- NOP (BEQ delay slot 2)
-  16 => x"ac851fff",  -- sw $5, 8191($4)
-  17 => x"00e2202a",  -- slt $4, $7, $2
-  18 => x"00622025",  -- or $4, $3, $2
-  19 => x"2067ffff",  -- addi $7, $3, -1
-  20 => x"00e23822",  -- sub $7, $7, $2
-  21 => x"8c621ff4",  -- lw $2, 8180($3)
-  22 => x"ac871ff4",  -- sw $7, 8180($4)
-  23 => x"00051820",  -- add $3, $0, $5
-  24 => x"10a3ffe7",  -- beq $5, $3, main (ajusté pour revenir à ligne 0)
-  25 => x"20000000",  -- NOP (BEQ delay slot 1)
-  26 => x"20000000"   -- NOP (BEQ delay slot 2)
-);
+  0  => x"20030001",
+  1  => x"2067000b",
+  2  => x"00671024",
+  3  => x"ac472000",
+  4  => x"00432820",
+  5  => x"8ca21fff",
+  6  => x"10430004",
+  7  => x"20000000",
+  8  => x"2063000b",
+  9  => x"08000006",
+  10 => x"20000000",
+  11 => x"00a7202a",
+  12 => x"10820002",
+  13 => x"20000000",
+  14 => x"ac851fff",
+  15 => x"00e2202a",
+  16 => x"00622025",
+  17 => x"2067ffff",
+  18 => x"00e23822",
+  19 => x"8c621ff4",
+  20 => x"ac871ff4", 
+  21 => x"00051820",
+  22 =>	x"10a3ffe9",
+  23 => x"20000000");
 BEGIN
   PROCESS (adresse)
   BEGIN
