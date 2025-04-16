@@ -1,4 +1,4 @@
---	Controller.VHD
+--	Datapath.VHD
 --	Yasser Raies et Vincent Tessier
 --	Hiver 2025
 

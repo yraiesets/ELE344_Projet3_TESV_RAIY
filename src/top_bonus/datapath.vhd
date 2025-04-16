@@ -128,7 +128,7 @@ BEGIN
 	-- Mul2-to-1 pour determiner IF_PCNext
 	IF_PCNext <= ID_PCJump WHEN ID_Jump = '1' ELSE IF_PCNextBr;
 
-	-- Bascule D Synchrone avec remise a zero asynchrone (clear) - PC va stall si un hazard load_use est detecte.
+	-- Bascule D Synchrone avec remise a zero asynchrone (clear) - PC va figer si un hazard de type load_use est detecte.
 	PROCESS(Clk, Reset) IS
 		BEGIN
 			IF Reset = '1' THEN
@@ -209,15 +209,7 @@ BEGIN
 				ID_EX_AluControl <= (OTHERS => '0');
 				ID_EX_AluSrc     <= '0';
 				ID_EX_RegDst     <= '0';
-            			ID_EX_MemtoReg   <= '0';
-            			ID_EX_rd1        <= (OTHERS => '0');
-            			ID_EX_rd2        <= (OTHERS => '0');
-            			ID_EX_SignImm    <= (OTHERS => '0');
-            			ID_EX_rs         <= (OTHERS => '0');
-            			ID_EX_rt         <= (OTHERS => '0');
-            			ID_EX_rd         <= (OTHERS => '0');
-            			ID_EX_PCPlus4    <= (OTHERS => '0');
-            			
+            			ID_EX_MemtoReg   <= '0';   			
 			ELSE
 				ID_EX_PCPlus4 		<= 	IF_ID_PCPlus4;
 				ID_EX_rd1 		<= 	ID_rd1;

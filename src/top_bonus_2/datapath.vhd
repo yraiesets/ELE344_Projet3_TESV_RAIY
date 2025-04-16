@@ -107,7 +107,7 @@ ARCHITECTURE rtl OF DATAPATH IS
 	SIGNAL MEM_WB_readdata      	: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL MEM_WB_instruction   	: STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-	-- Signaux pour les detections de Hazards
+	-- Signaux pour les detections de Hazards et la prediction du branchement
 	SIGNAL LW_HAZARD_FLAG		: STD_LOGIC;
 	SIGNAL ID_BRANCH_FLAG		: STD_LOGIC;
 	SIGNAL ID_SignImmSh		: STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -131,7 +131,7 @@ BEGIN
 	-- Mul2-to-1 pour determiner IF_PCNext
 	IF_PCNext <= ID_PCJump WHEN ID_Jump = '1' ELSE IF_PCNextBr;
 
-	-- Bascule D Synchrone avec remise a zero asynchrone (clear) - PC va stall si un hazard load_use est detecte.
+	-- Bascule D Synchrone avec remise a zero asynchrone (clear) - PC va figer si un hazard load_use est detecte.
 	PROCESS(Clk, Reset) IS
 		BEGIN
 			IF Reset = '1' THEN
@@ -196,7 +196,7 @@ BEGIN
             		rd2	=>	ID_rd2
         	);
 
-    	-- Extension de signe (SignExtend) et Gestion des sauts.
+    	-- Extension de signe (SignExtend) et prediction du branchement.
 	ID_SignImm 	<= STD_LOGIC_VECTOR(RESIZE(SIGNED(IF_ID_Instruction(15 DOWNTO 0)), N));
 	ID_SignImmSh	<= STD_LOGIC_VECTOR(SHIFT_LEFT(SIGNED(ID_SignImm), 2));
 	ID_PCBranch	<= STD_LOGIC_VECTOR(SIGNED(IF_ID_PCPlus4) + SIGNED(ID_SignImmSh));
@@ -215,15 +215,7 @@ BEGIN
 				ID_EX_AluControl <= (OTHERS => '0');
 				ID_EX_AluSrc     <= '0';
 				ID_EX_RegDst     <= '0';
-            			ID_EX_MemtoReg   <= '0';
-            			ID_EX_rd1        <= (OTHERS => '0');
-            			ID_EX_rd2        <= (OTHERS => '0');
-            			ID_EX_SignImm    <= (OTHERS => '0');
-            			ID_EX_rs         <= (OTHERS => '0');
-            			ID_EX_rt         <= (OTHERS => '0');
-            			ID_EX_rd         <= (OTHERS => '0');
-            			ID_EX_PCPlus4    <= (OTHERS => '0');
-            			
+            			ID_EX_MemtoReg   <= '0';          			
 			ELSE
 				ID_EX_PCPlus4 		<= 	IF_ID_PCPlus4;
 				ID_EX_rd1 		<= 	ID_rd1;
